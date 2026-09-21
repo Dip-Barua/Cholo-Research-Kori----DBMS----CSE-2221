@@ -1,13 +1,13 @@
 "use client"
 
 import * as Icons from "lucide-react"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 
-export default function StatCard({ title, value, trend, icon }) {
+export default function StatCard({ title, value, trend, icon, href }) {
   const Icon = Icons[icon]
-
-  return (
-    <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+  const card = (
+    <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:var(--primary-accent)] hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
       <CardContent className="flex items-start justify-between gap-4 px-4 py-4 sm:px-5">
         <div className="space-y-2">
           <div className="text-sm font-medium text-[color:var(--text-secondary)]">{title}</div>
@@ -21,4 +21,10 @@ export default function StatCard({ title, value, trend, icon }) {
       </CardContent>
     </Card>
   )
+
+  if (href) {
+    return <Link href={href} className="block">{card}</Link>
+  }
+
+  return card
 }
