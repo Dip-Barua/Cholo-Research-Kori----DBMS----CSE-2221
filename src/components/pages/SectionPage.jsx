@@ -786,34 +786,59 @@ export default function SectionPage({ section }) {
         <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
           <CardHeader><CardTitle>Users</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {userService.getUsers().map((user) => (
-              <div key={user.id} className="flex flex-col gap-3 rounded-xl border border-[color:var(--border-color)] p-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="font-medium">{user.name}</div>
-                  <div className="text-sm text-[color:var(--text-secondary)]">{user.email}</div>
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <select
-                    value={roleOptions.includes(user.role) ? user.role : "researcher"}
-                    onChange={(event) => {
-                      const nextRole = event.target.value
-                      userService.updateUserRole(user.id, nextRole)
-                      refreshUserList()
-                      if (currentUser.id === user.id) {
-                        setNotice(`Your role was updated to ${nextRole}.`)
-                      }
-                    }}
-                    className="h-10 rounded-xl border border-[color:var(--border-color)] bg-white px-3 text-sm outline-none"
-                  >
-                    {roleOptions.map((option) => <option key={option} value={option}>{option}</option>)}
-                  </select>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => userService.deactivateUser(user.id)}>Deactivate</Button>
-                    <Button variant="outline" onClick={() => userService.reactivateUser(user.id)}>Activate</Button>
+            {userService.getUsers().map((user) => {
+              const isActive = user.active !== false
+              return (
+                <div key={user.id} className="flex flex-col gap-3 rounded-xl border border-[color:var(--border-color)] p-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{user.name}</span>
+                      <Badge
+                        variant={isActive ? "secondary" : "destructive"}
+                        className={isActive ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-rose-100 text-rose-700 border-rose-200"}
+                      >
+                        {isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-[color:var(--text-secondary)]">{user.email}</div>
+                  </div>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <select
+                      value={roleOptions.includes(user.role) ? user.role : "researcher"}
+                      onChange={(event) => {
+                        const nextRole = event.target.value
+                        userService.updateUserRole(user.id, nextRole)
+                        refreshUserList()
+                        if (currentUser.id === user.id) {
+                          setNotice(`Your role was updated to ${nextRole}.`)
+                        }
+                      }}
+                      className="h-10 rounded-xl border border-[color:var(--border-color)] bg-white px-3 text-sm outline-none"
+                    >
+                      {roleOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="destructive"
+                        className="bg-rose-600 text-white hover:bg-rose-700 disabled:bg-rose-100 disabled:text-rose-400"
+                        disabled={isActive === false}
+                        onClick={() => userService.deactivateUser(user.id)}
+                      >
+                        Deactivate
+                      </Button>
+                      <Button
+                        variant="default"
+                        className="bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-emerald-100 disabled:text-emerald-400"
+                        disabled={isActive === true}
+                        onClick={() => userService.reactivateUser(user.id)}
+                      >
+                        Activate
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </CardContent>
         </Card>
 
