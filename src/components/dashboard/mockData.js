@@ -28,10 +28,6 @@ export const navGroups = [
       { label: "Publications", icon: "BookOpenText", href: "#research-opportunities" },
     ],
   },
-  {
-    label: "Insights",
-    items: [{ label: "Analytics", icon: "ChartNoAxesCombined", href: "#top" }],
-  },
 ];
 
 export const statCards = [
