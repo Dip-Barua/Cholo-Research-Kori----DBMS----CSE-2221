@@ -18,7 +18,7 @@ const schema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   university: z.string().min(2, "University is required"),
   department: z.string().min(2, "Department is required"),
-  role: z.enum(["student", "researcher", "supervisor", "admin"]),
+  role: z.enum(["author", "researcher", "admin"]),
 })
 
 export default function RegisterPage() {
@@ -83,9 +83,8 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <select id="role" className="h-11 w-full rounded-xl border border-[color:var(--border-color)] bg-[color:var(--bg-main)] px-3 text-sm outline-none" {...register("role")}>
-                <option value="student">Student</option>
+                <option value="author">Author</option>
                 <option value="researcher">Researcher</option>
-                <option value="supervisor">Supervisor</option>
                 <option value="admin">Admin</option>
               </select>
               {errors.role ? <p className="text-sm text-red-600">{errors.role.message}</p> : null}

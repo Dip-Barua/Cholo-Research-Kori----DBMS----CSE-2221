@@ -66,6 +66,14 @@ function connectionDisabled(state) {
   return state === "pending_outgoing" || state === "connected" || state === "member"
 }
 
+function canCreateResearchWorkspace(role) {
+  return ["admin", "author"].includes(role)
+}
+
+function canManageTasks(role) {
+  return ["admin", "author", "supervisor"].includes(role)
+}
+
 function TaskCard({ task, onChange, userService, currentUser }) {
   const assignee = userService.getUser(task.assignedTo)
 
@@ -86,7 +94,7 @@ function TaskCard({ task, onChange, userService, currentUser }) {
         <Button type="button" variant="outline" className="rounded-xl" onClick={() => onChange("In Progress")}>In Progress</Button>
         <Button type="button" variant="outline" className="rounded-xl" onClick={() => onChange("Completed")}>Completed</Button>
       </div>
-      {currentUser.role === "supervisor" || currentUser.role === "admin" ? <div className="mt-2 text-xs text-[color:var(--text-secondary)]">Supervisor controls enabled</div> : null}
+      {currentUser.role === "admin" || currentUser.role === "author" ? <div className="mt-2 text-xs text-[color:var(--text-secondary)]">Research controls enabled</div> : null}
     </div>
   )
 }
@@ -138,6 +146,7 @@ export default function SectionPage({ section }) {
   const [notificationReadFilter, setNotificationReadFilter] = useState("all")
   const [settingsDraft, setSettingsDraft] = useState(settingsService.getSettings(currentUser.id))
   const [searchTerm, setSearchTerm] = useState(query)
+  const [roleRefreshVersion, setRoleRefreshVersion] = useState(0)
 
   const projects = projectService.getProjects()
   const labs = labService.getLabs()
@@ -156,6 +165,7 @@ export default function SectionPage({ section }) {
   const projectStatuses = Array.from(new Set(projects.map((project) => project.status))).sort()
 
   const activeProjectIds = new Set(projects.filter((project) => project.memberIds.includes(currentUser.id) || project.supervisorId === currentUser.id).map((project) => project.id))
+  const refreshUserList = () => setRoleRefreshVersion((version) => version + 1)
 
   const filteredProjects = projects.filter((project) => {
     const text = `${project.title} ${project.description} ${project.field} ${(project.skills || []).join(" ")}`.toLowerCase()
@@ -199,14 +209,14 @@ export default function SectionPage({ section }) {
 
   const managedLabs = labService.getManagedLabs(currentUser.id)
 
-  const createProject = (event) => {
+  const createProject = async (event) => {
     event.preventDefault()
     if (!projectTitle || !projectDescription || !projectField || !projectLabId) {
       setNotice("Select a lab and fill in the required project fields.")
       return
     }
     try {
-      const created = projectService.createProject({
+      const created = await projectService.createProject({
         title: projectTitle,
         description: projectDescription,
         field: projectField,
@@ -222,11 +232,11 @@ export default function SectionPage({ section }) {
     }
   }
 
-  const createLab = (event) => {
+  const createLab = async (event) => {
     event.preventDefault()
     if (!labName || !labDepartment) return
     try {
-      const created = labService.createLab({
+      const created = await labService.createLab({
         name: labName,
         department: labDepartment,
         description: labDescription,
@@ -395,7 +405,7 @@ export default function SectionPage({ section }) {
 
   if (section === "projects") {
     const projectCards = filteredProjects.length ? filteredProjects : projects
-    const canCreate = ["supervisor", "admin"].includes(currentUser.role)
+    const canCreate = canCreateResearchWorkspace(currentUser.role)
     return (
       <div className="space-y-6">
         <SectionHeader title="Research Projects" description="Track research projects, create new workspaces, and manage project progress." />
@@ -457,7 +467,7 @@ export default function SectionPage({ section }) {
     return (
       <div className="space-y-6">
         <SectionHeader title="Research Labs" description="Explore labs, research areas, and open projects." />
-        {currentUser.role === "supervisor" || currentUser.role === "admin" ? (
+        {canCreateResearchWorkspace(currentUser.role) ? (
           <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader><CardTitle>Create Lab</CardTitle></CardHeader>
             <CardContent>
@@ -647,7 +657,7 @@ export default function SectionPage({ section }) {
     return (
       <div className="space-y-6">
         <SectionHeader title="Tasks" description="Track assigned work and create tasks for project members." />
-        {(currentUser.role === "supervisor" || currentUser.role === "admin") ? (
+        {canManageTasks(currentUser.role) ? (
           <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]"><CardHeader><CardTitle>Create Task</CardTitle></CardHeader><CardContent><form className="grid gap-3 md:grid-cols-2" onSubmit={createTask}><Input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="Title" required /><Input value={taskAssignee} onChange={(event) => setTaskAssignee(event.target.value)} placeholder="Assignee user id or email" required /><Textarea value={taskDescription} onChange={(event) => setTaskDescription(event.target.value)} placeholder="Description" className="md:col-span-2" required /><Input type="date" value={taskDueDate} onChange={(event) => setTaskDueDate(event.target.value)} /><select value={taskPriority} onChange={(event) => setTaskPriority(event.target.value)} className="h-10 rounded-xl border border-[color:var(--border-color)] px-3"><option>Low</option><option>Medium</option><option>High</option></select><div className="md:col-span-2"><Button className="rounded-xl bg-[color:var(--primary-dark)] text-white" type="submit">Create Task</Button></div></form></CardContent></Card>
         ) : null}
         <div className="grid gap-4 xl:grid-cols-3">
@@ -759,16 +769,99 @@ export default function SectionPage({ section }) {
   }
 
   if (section === "admin") {
+    const roleOptions = ["author", "researcher", "admin"]
+    const adminLabs = labs
+    const adminProjects = projects
+
     return (
       <div className="space-y-6">
-        <SectionHeader title="Admin" description="Manage users, projects, and platform content." />
+        <SectionHeader title="Admin" description="Manage users, project access, and platform roles." />
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <Card><CardContent className="p-5"><div className="text-sm text-[color:var(--text-secondary)]">Total Users</div><div className="text-3xl font-semibold">{metrics.totalUsers}</div></CardContent></Card>
           <Card><CardContent className="p-5"><div className="text-sm text-[color:var(--text-secondary)]">Projects</div><div className="text-3xl font-semibold">{metrics.totalProjects}</div></CardContent></Card>
           <Card><CardContent className="p-5"><div className="text-sm text-[color:var(--text-secondary)]">Labs</div><div className="text-3xl font-semibold">{metrics.totalLabs}</div></CardContent></Card>
           <Card><CardContent className="p-5"><div className="text-sm text-[color:var(--text-secondary)]">Pending Requests</div><div className="text-3xl font-semibold">{requests.filter((request) => request.status === "pending").length}</div></CardContent></Card>
         </div>
-        <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]"><CardHeader><CardTitle>Users</CardTitle></CardHeader><CardContent className="space-y-3">{userService.getUsers().map((user) => <div key={user.id} className="flex items-center justify-between rounded-xl border border-[color:var(--border-color)] p-4"><div><div className="font-medium">{user.name}</div><div className="text-sm text-[color:var(--text-secondary)]">{user.email} · {user.role}</div></div><div className="flex gap-2"><Button variant="outline" onClick={() => userService.deactivateUser(user.id)}>Deactivate</Button><Button variant="outline" onClick={() => userService.reactivateUser(user.id)}>Activate</Button></div></div>)}</CardContent></Card>
+
+        <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+          <CardHeader><CardTitle>Users</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {userService.getUsers().map((user) => (
+              <div key={user.id} className="flex flex-col gap-3 rounded-xl border border-[color:var(--border-color)] p-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="font-medium">{user.name}</div>
+                  <div className="text-sm text-[color:var(--text-secondary)]">{user.email}</div>
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <select
+                    value={roleOptions.includes(user.role) ? user.role : "researcher"}
+                    onChange={(event) => {
+                      const nextRole = event.target.value
+                      userService.updateUserRole(user.id, nextRole)
+                      refreshUserList()
+                      if (currentUser.id === user.id) {
+                        setNotice(`Your role was updated to ${nextRole}.`)
+                      }
+                    }}
+                    className="h-10 rounded-xl border border-[color:var(--border-color)] bg-white px-3 text-sm outline-none"
+                  >
+                    {roleOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => userService.deactivateUser(user.id)}>Deactivate</Button>
+                    <Button variant="outline" onClick={() => userService.reactivateUser(user.id)}>Activate</Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+            <CardHeader><CardTitle>Research Labs</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {adminLabs.length ? adminLabs.map((lab) => (
+                <div key={lab.id} className="rounded-xl border border-[color:var(--border-color)] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium">{lab.name}</div>
+                      <div className="text-sm text-[color:var(--text-secondary)]">{lab.department}</div>
+                    </div>
+                    <Button variant="outline" onClick={() => {
+                      if (window.confirm(`Delete lab "${lab.name}"?`)) {
+                        labService.deleteLab(lab.id)
+                      }
+                    }}>Delete</Button>
+                  </div>
+                  <p className="mt-2 text-sm text-[color:var(--text-secondary)]">{lab.description}</p>
+                </div>
+              )) : <EmptyState title="No labs" description="No research labs are available to manage." />}
+            </CardContent>
+          </Card>
+
+          <Card className="border-[color:var(--border-color)] bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+            <CardHeader><CardTitle>Research Projects</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              {adminProjects.length ? adminProjects.map((project) => (
+                <div key={project.id} className="rounded-xl border border-[color:var(--border-color)] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium">{project.title}</div>
+                      <div className="text-sm text-[color:var(--text-secondary)]">{project.field}</div>
+                    </div>
+                    <Button variant="outline" onClick={() => {
+                      if (window.confirm(`Delete project "${project.title}"?`)) {
+                        projectService.deleteProject(project.id)
+                      }
+                    }}>Delete</Button>
+                  </div>
+                  <p className="mt-2 text-sm text-[color:var(--text-secondary)]">{project.description}</p>
+                </div>
+              )) : <EmptyState title="No projects" description="No research projects are available to manage." />}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }

@@ -18,6 +18,10 @@ export async function POST(request) {
     }
 
     const state = await loadAppState()
+    const actor = state.users.find((user) => user.id === actorId)
+    if (!actor || !["admin", "author"].includes(actor.role)) {
+      return NextResponse.json({ error: "Only admins and authors can create research labs" }, { status: 403 })
+    }
 
     const extraMembers = Array.isArray(body.memberIds) ? body.memberIds.filter((m) => m && m !== actorId) : []
     const memberIds = Array.from(new Set([actorId, ...extraMembers]))

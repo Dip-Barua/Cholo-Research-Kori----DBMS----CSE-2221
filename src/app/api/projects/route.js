@@ -18,9 +18,14 @@ export async function POST(request) {
     }
 
     const state = await loadAppState()
+    const actor = state.users.find((u) => u.id === actorId)
+    if (!actor || !["admin", "author"].includes(actor.role)) {
+      return NextResponse.json({ error: "Only admins and authors can create research projects" }, { status: 403 })
+    }
+
     const lab = state.labs.find((l) => l.id === body.labId)
     if (!lab) return NextResponse.json({ error: "Lab not found" }, { status: 404 })
-    if (lab.supervisorId !== actorId && state.users.find((u) => u.id === actorId)?.role !== "admin") {
+    if (lab.supervisorId !== actorId && actor.role !== "admin") {
       return NextResponse.json({ error: "Not authorized to create project for this lab" }, { status: 403 })
     }
 

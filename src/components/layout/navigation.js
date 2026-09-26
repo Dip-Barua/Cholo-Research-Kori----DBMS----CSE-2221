@@ -1,7 +1,10 @@
 export const navigationGroups = [
   {
     label: "Overview",
-    items: [{ label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" }],
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" },
+      { label: "Admin", href: "/admin", icon: "ShieldCheck", roles: ["admin"] },
+    ],
   },
   {
     label: "Research",

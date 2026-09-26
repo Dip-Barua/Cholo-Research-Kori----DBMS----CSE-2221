@@ -97,6 +97,33 @@ function updateProfile(userId, updates) {
   })
 }
 
+function updateUserRole(userId, role) {
+  return updateProfile(userId, { role })
+}
+
+function deleteProject(projectId) {
+  return updateDatabase((draft) => {
+    draft.projects = draft.projects.filter((project) => project.id !== projectId)
+    draft.labs.forEach((lab) => {
+      lab.projectIds = (lab.projectIds || []).filter((id) => id !== projectId)
+    })
+    draft.conversations = draft.conversations.filter((conversation) => !(conversation.type === "project" && conversation.projectId === projectId))
+    return draft
+  })
+}
+
+function deleteLab(labId) {
+  return updateDatabase((draft) => {
+    const lab = draft.labs.find((item) => item.id === labId)
+    if (lab) {
+      draft.projects = draft.projects.filter((project) => project.labId !== labId)
+      draft.labs = draft.labs.filter((item) => item.id !== labId)
+      draft.conversations = draft.conversations.filter((conversation) => !(conversation.type === "lab" && conversation.labId === labId))
+    }
+    return draft
+  })
+}
+
 function login({ email, password }) {
   const db = getDatabase()
   const user = db.users.find((item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password && item.active !== false)
@@ -174,9 +201,14 @@ function createProject(payload, actorId) {
     throw new Error("Select a research lab for this project")
   }
 
+  const actor = getUserById(getDatabase(), actorId)
+  if (!actor || !["admin", "author"].includes(actor.role)) {
+    throw new Error("Only admins and authors can create research projects")
+  }
+
   const lab = getDatabase().labs.find((item) => item.id === payload.labId)
   if (!lab) throw new Error("Lab not found")
-  if (lab.supervisorId !== actorId && getUserById(getDatabase(), actorId)?.role !== "admin") {
+  if (lab.supervisorId !== actorId && actor.role !== "admin") {
     throw new Error("Only the lab admin can create projects under this lab")
   }
 
@@ -271,6 +303,11 @@ function createLab(payload, actorId) {
       const data = await applyStateResponse(response, "Could not create lab")
       return clone(data.lab)
     })()
+  }
+
+  const actor = getUserById(getDatabase(), actorId)
+  if (!actor || !["admin", "author"].includes(actor.role)) {
+    throw new Error("Only admins and authors can create research labs")
   }
 
   const extraMembers = Array.isArray(payload.memberIds)
@@ -937,11 +974,12 @@ export const userService = {
   searchUsers,
   isConnected: (viewerId, targetId) => isConnected(getDatabase, viewerId, targetId),
   updateProfile,
+  updateUserRole,
   deactivateUser,
   reactivateUser,
 }
-export const projectService = { getProjects, getProject, createProject, updateProject, addProjectMember }
-export const labService = { getLabs, getLab, createLab, addLabMember, getManagedLabs }
+export const projectService = { getProjects, getProject, createProject, updateProject, addProjectMember, deleteProject }
+export const labService = { getLabs, getLab, createLab, addLabMember, getManagedLabs, deleteLab }
 export const collaborationService = {
   getResearchRequests,
   findCollaborationRequest,
