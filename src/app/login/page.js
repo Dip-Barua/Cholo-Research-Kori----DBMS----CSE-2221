@@ -1,12 +1,13 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowRight, Mail, Lock } from "lucide-react"
+import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/components/providers/AppProvider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,13 +21,14 @@ const schema = z.object({
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
+  const [showPassword, setShowPassword] = useState(false)
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
     setValue,
-  } = useForm({ resolver: zodResolver(schema), defaultValues: { email: "admin@cholo.local", password: "admin123" } })
+  } = useForm({ resolver: zodResolver(schema) })
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -45,33 +47,38 @@ export default function LoginPage() {
     }
   }
 
-  const demoAccounts = [["admin@cholo.local", "admin123"]]
-
   return (
     <main className="flex min-h-screen items-center justify-center bg-[color:var(--bg-main)] px-4 py-10">
-      <div className="grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_0.9fr]">
-        <section className="rounded-[2rem] border border-[color:var(--border-color)] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8">
-          <div className="mb-6 space-y-3">
+      <div className="w-full max-w-lg">
+        <div className="rounded-[2rem] border border-[color:var(--border-color)] bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-8">
+          <div className="mb-6 flex justify-center">
+            <Image src="/logo/transparent_logo_zoomed.png" alt="Cholo Research Kori" width={240} height={72} className="h-14 w-auto object-contain" priority />
+          </div>
+
+          <div className="mb-6 space-y-2 text-center">
             <div className="text-sm font-medium text-[color:var(--primary-dark)]">Welcome back</div>
-            <h1 className="text-3xl font-semibold tracking-tight">Login to Cholo Research Kori</h1>
+            <h1 className="text-3xl font-semibold tracking-tight text-[color:var(--text-primary)]">Sign in</h1>
             <p className="text-sm text-[color:var(--text-secondary)]">Use your university account to continue your research workflow.</p>
           </div>
 
           <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="flex items-center gap-2 rounded-xl border border-[color:var(--border-color)] bg-white px-3 focus-within:border-[color:var(--primary-dark)]">
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <div className="flex items-center gap-2 rounded-xl border border-[color:var(--border-color)] bg-[color:var(--bg-main)] px-3 py-2 transition-colors focus-within:border-[color:var(--primary-dark)] focus-within:bg-white">
                 <Mail className="h-4 w-4 text-[color:var(--text-secondary)]" />
-                <Input id="email" type="email" className="border-0 px-0 shadow-none focus-visible:ring-0" {...register("email")} />
+                <Input id="email" type="email" autoComplete="email" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" {...register("email")} />
               </div>
               {errors.email ? <p className="text-sm text-red-600">{errors.email.message}</p> : null}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="flex items-center gap-2 rounded-xl border border-[color:var(--border-color)] bg-white px-3 focus-within:border-[color:var(--primary-dark)]">
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <div className="flex items-center gap-2 rounded-xl border border-[color:var(--border-color)] bg-[color:var(--bg-main)] px-3 py-2 transition-colors focus-within:border-[color:var(--primary-dark)] focus-within:bg-white">
                 <Lock className="h-4 w-4 text-[color:var(--text-secondary)]" />
-                <Input id="password" type="password" className="border-0 px-0 shadow-none focus-visible:ring-0" {...register("password")} />
+                <Input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0" {...register("password")} />
+                <button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((value) => !value)} className="rounded-md p-1 text-[color:var(--text-secondary)] transition-colors hover:bg-white hover:text-[color:var(--primary-dark)]">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
               {errors.password ? <p className="text-sm text-red-600">{errors.password.message}</p> : null}
             </div>
@@ -86,25 +93,7 @@ export default function LoginPage() {
           <div className="mt-6 text-center text-sm text-[color:var(--text-secondary)]">
             Don&apos;t have an account? <Link href="/register" className="font-medium text-[color:var(--primary-dark)]">Register</Link>
           </div>
-        </section>
-
-        <aside className="space-y-4 rounded-[2rem] border border-[color:var(--border-color)] bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] sm:p-8">
-          <div>
-            <h2 className="text-xl font-semibold">Demo Accounts</h2>
-            <p className="mt-1 text-sm text-[color:var(--text-secondary)]">Use one of these seeded accounts to try the full MVP.</p>
-          </div>
-          <div className="space-y-3">
-            {demoAccounts.map(([email, password]) => (
-              <button key={email} type="button" onClick={() => {
-                setValue("email", email)
-                setValue("password", password)
-              }} className="w-full rounded-2xl border border-[color:var(--border-color)] p-4 text-left transition-colors hover:bg-[color:rgba(31,176,200,0.08)]">
-                <div className="font-medium">{email}</div>
-                <div className="text-sm text-[color:var(--text-secondary)]">Password: {password}</div>
-              </button>
-            ))}
-          </div>
-        </aside>
+        </div>
       </div>
     </main>
   )
