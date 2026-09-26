@@ -144,7 +144,7 @@ function register(payload) {
     password: payload.password,
     university: payload.university,
     department: payload.department,
-    role: payload.role,
+    role: "researcher",
     bio: "",
     researchInterests: [],
     skills: [],

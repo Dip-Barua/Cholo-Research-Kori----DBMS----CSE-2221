@@ -18,7 +18,6 @@ const schema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   university: z.string().min(2, "University is required"),
   department: z.string().min(2, "Department is required"),
-  role: z.enum(["author", "researcher", "admin"]),
 })
 
 export default function RegisterPage() {
@@ -29,11 +28,11 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
-  } = useForm({ resolver: zodResolver(schema), defaultValues: { role: "researcher" } })
+  } = useForm({ resolver: zodResolver(schema) })
 
   const onSubmit = async (values) => {
     try {
-      await registerUser(values)
+      await registerUser({ ...values, role: "researcher" })
       router.push("/dashboard")
     } catch (error) {
       setError("root", { message: error.message })
@@ -50,7 +49,7 @@ export default function RegisterPage() {
 
           <div className="mb-6 space-y-2 text-center">
             <div className="text-sm font-medium text-[color:var(--primary-dark)]">Create account</div>
-            <h1 className="text-3xl font-semibold tracking-tight">Join Cholo Research Kori</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">Join Us</h1>
             <p className="text-sm text-[color:var(--text-secondary)]">Create your profile to start collaborating on research projects.</p>
           </div>
 
@@ -71,23 +70,14 @@ export default function RegisterPage() {
               {errors.password ? <p className="text-sm text-red-600">{errors.password.message}</p> : null}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="university">University</Label>
-              <Input id="university" className="h-11 rounded-xl border-[color:var(--border-color)] bg-[color:var(--bg-main)]" {...register("university")} />
-              {errors.university ? <p className="text-sm text-red-600">{errors.university.message}</p> : null}
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="department">Department</Label>
               <Input id="department" className="h-11 rounded-xl border-[color:var(--border-color)] bg-[color:var(--bg-main)]" {...register("department")} />
               {errors.department ? <p className="text-sm text-red-600">{errors.department.message}</p> : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <select id="role" className="h-11 w-full rounded-xl border border-[color:var(--border-color)] bg-[color:var(--bg-main)] px-3 text-sm outline-none" {...register("role")}>
-                <option value="author">Author</option>
-                <option value="researcher">Researcher</option>
-                <option value="admin">Admin</option>
-              </select>
-              {errors.role ? <p className="text-sm text-red-600">{errors.role.message}</p> : null}
+            </div>            
+            <div className="space-y-full md:col-span-2">
+              <Label htmlFor="university">University</Label>
+              <Input id="university" className="h-11 rounded-xl border-[color:var(--border-color)] bg-[color:var(--bg-main)]" {...register("university")} />
+              {errors.university ? <p className="text-sm text-red-600">{errors.university.message}</p> : null}
             </div>
 
             {errors.root ? <div className="md:col-span-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{errors.root.message}</div> : null}
