@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Cholo Research Kori
 
-## Getting Started
+Cholo Research Kori is a DBMS-based research collaboration platform designed for researchers, supervisors, and academic users. The project supports research project discovery, collaboration management, messaging, notifications, task tracking, publication records, and profile-based coordination in a single system.
 
-First, run the development server:
+## Project Objective
+
+The goal of this project is to design and implement a structured relational database application that allows users to collaborate on research activities while maintaining data consistency, normalization, and efficient data management across multiple system modules.
+
+## Tech Stack
+
+- Frontend: Next.js
+- Language: JavaScript / React
+- Backend: Next.js API Routes
+- Database: MySQL
+- Styling: Tailwind CSS
+- Runtime: Node.js
+- Package Manager: npm
+- Container Support: Docker / Docker Compose
+
+## Core Modules
+
+- User / Researcher Panel
+- Supervisor / Faculty Panel
+- Research Project Panel
+- Collaboration Panel
+- Messaging Panel
+- Notification Panel
+- Profile / Settings Panel
+- Database Management Layer
+
+## Key Features
+
+- Researcher registration and login
+- Academic profile and skill management
+- Research project creation and tracking
+- Collaboration request workflow
+- Search and discovery of projects and researchers
+- Communication through messages and notifications
+- Task and milestone tracking
+- Publication and project visibility
+- Dashboard-based overview of active research work
+
+## Project Structure
+
+- Application source: `src/`
+- API routes: `src/app/api/`
+- UI components: `src/components/`
+- Project documentation: `DOCS/`
+- ER diagram: `DOCS/Er_Diagram.png`
+- Screenshots: `DOCS/Screenshots/`
+- Report file: `DOCS/DBMS Project report.pdf`
+
+## Documentation and Assets
+
+- [Project Report PDF](DOCS/DBMS%20Project%20report.pdf)
+- [Screenshots Folder](DOCS/Screenshots)
+
+## ER Diagram
+
+![ER Diagram](DOCS/Er_Diagram.png)
+
+The ER diagram represents the core database entities and relationships for users, projects, labs, collaborations, tasks, milestones, notifications, publications, and messaging modules.
+
+## Screenshot Gallery
+
+### Landing Page
+![Landing Page](DOCS/Screenshots/Landing_page.png)
+
+### Dashboard
+![Dashboard](DOCS/Screenshots/dashboard.png)
+
+### Research Discovery
+![Discover Research](DOCS/Screenshots/Discover-research.png)
+
+### Researchers
+![Researchers](DOCS/Screenshots/reseachers.png)
+
+### My Collaborations
+![My Collaborations](DOCS/Screenshots/my-collaborations.png)
+
+### Tasks
+![Tasks](DOCS/Screenshots/tasks.png)
+
+### Milestones
+![Milestones](DOCS/Screenshots/milestones.png)
+
+### Messages
+![Messages](DOCS/Screenshots/inbox_messages.png)
+
+### Publications
+![Publications](DOCS/Screenshots/publications.png)
+
+## Team Members
+
+- [Dip Barua](https://github.com/dip-barua)
+- [Miftahul Jannat Mim](https://github.com/MmiFTahM)
+- [Tanjima Ahmed Chowdhury Tithi](https://github.com/tanjimatithi)
+
+## Setup and Run Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd cholo-research-kori
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the application
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 4. Open the app
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Open the browser at:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+http://localhost:3000
+```
 
-## Learn More
+### 5. Optional: run with Docker
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker-compose up --build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is implemented as a modern web-based DBMS application using a structured relational design and modular application flow. All supporting documentation, screenshots, and schema assets are preserved in the `DOCS` directory for review, reporting, and demonstration purposes.
