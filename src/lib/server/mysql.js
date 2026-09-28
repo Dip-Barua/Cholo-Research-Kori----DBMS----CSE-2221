@@ -3,6 +3,8 @@ import mysql from "mysql2/promise"
 let pool
 
 function getDatabaseConfig() {
+  const useSsl = process.env.MYSQL_SSL === "true" || process.env.DB_SSL === "true"
+
   return {
     host: process.env.MYSQL_HOST || process.env.DB_HOST || "127.0.0.1",
     port: Number(process.env.MYSQL_PORT || process.env.DB_PORT || 3306),
@@ -12,6 +14,7 @@ function getDatabaseConfig() {
     connectionLimit: 5,
     waitForConnections: true,
     namedPlaceholders: true,
+    ssl: useSsl ? { rejectUnauthorized: true } : undefined,
   }
 }
 
